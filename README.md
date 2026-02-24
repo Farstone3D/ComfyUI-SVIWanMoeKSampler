@@ -1,7 +1,6 @@
 When chaining multiple generations together (such as in SVI workflows or loopback pipelines), the original sampler node would inevitably fail, resulting in either a CUDA error: invalid argument crash or collapsed, muddy-brown latents.
 
-This occurred because the `set_shift` function was modifying the base model's model_sampling object directly in VRAM without cloning it first. As a result:
-
+This occurred because the `set_shift` function was modifying the base model's model_sampling object directly in VRAM without cloning it first.
 In sequential runs, the `sigma_shift` patch would recursively stack on top of itself. By the 3rd or 4th generation, the noise scheduler math was completely destroyed, outputting NaN values and resulting in brown/grey latents.
 
 Because the base model was permanently mutated, ComfyUI's native memory manager (cudaMallocAsync or native) could no longer safely offload the tensors from the GPU to System RAM, triggering a fatal CUDA pointer crash.
